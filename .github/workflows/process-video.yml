@@ -13,6 +13,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # (هذه الخطوة تم إضافتها هنا لحل مشكلة command not found)
+      - name: Set up FFmpeg
+        uses: AnimMouse/setup-ffmpeg@v1
+
       - name: Convert new videos to silent looping MP4
         run: |
           mkdir -p output
@@ -51,3 +55,4 @@ jobs:
             git commit -m "Auto-process videos [skip ci]"
             git push
           fi
+          
