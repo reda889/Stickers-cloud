@@ -1,0 +1,53 @@
+name: Process Videos with FFmpeg
+
+on:
+  push:
+    branches: [main]
+    paths: ["input/**"]
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Convert new videos to silent looping MP4
+        run: |
+          mkdir -p output
+          for file in input/*; do
+            [ -f "$file" ] || continue
+            fn=$(basename -- "$file")
+            [ "$fn" = ".gitkeep" ] && continue
+            base="${fn%.*}"
+            out="output/${base}.mp4"
+            if [ -f "$out" ]; then
+              echo "skip: $fn"
+              continue
+            fi
+            echo "processing: $fn"
+            ffmpeg -i "$file" \
+              -an \
+              -c:v libx264 \
+              -preset slow \
+              -crf 23 \
+              -movflags +faststart \
+              -pix_fmt yuv420p \
+              -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" \
+              "$out" && echo "done: $out"
+          done
+
+      - name: Commit processed videos
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add output/
+          if git diff --staged --quiet; then
+            echo "nothing new"
+          else
+            git commit -m "Auto-process videos [skip ci]"
+            git push
+          fi
