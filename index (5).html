@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>☁ Stickers Cloud</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body class="theme-dark">
+
+<!-- Animated orbs -->
+<div class="orbs" aria-hidden="true">
+  <div class="orb orb-1"></div><div class="orb orb-2"></div>
+  <div class="orb orb-3"></div><div class="orb orb-4"></div>
+  <div class="orb orb-5"></div>
+</div>
+
+<!-- Toasts -->
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+
+<!-- LIGHTBOX -->
+<div class="overlay" id="lb" role="dialog" aria-modal="true">
+  <div class="lb-inner">
+    <img id="lbImg" src="" alt="" style="display:none"/>
+    <video id="lbVid" autoplay loop muted playsinline controls style="display:none"></video>
+    <button class="lb-close" id="lbClose" aria-label="Close">✕</button>
+    <p class="lb-nm" id="lbNm"></p>
+  </div>
+</div>
+
+<!-- NAME MODAL -->
+<div class="overlay" id="nameModal" role="dialog" aria-modal="true">
+  <div class="modal modal-name">
+    <div class="name-prev-row">
+      <div class="name-thumb" id="nameThumb"></div>
+      <div>
+        <span class="name-orig" id="nameOrig">filename.png</span>
+        <span class="name-fsz" id="nameFsz">—</span>
+      </div>
+    </div>
+    <h2 id="nameTitleEl">✏️ Name your sticker</h2>
+    <p>Give it a memorable name or press <strong>Continue</strong> to use the auto-generated one.</p>
+    <div class="name-inp-row">
+      <input type="text" id="nameInp" placeholder="my-cool-sticker" maxlength="60" autocomplete="off" spellcheck="false"/>
+      <span class="name-ext-lbl" id="nameExtLbl">.png</span>
+    </div>
+    <div class="name-auto-row">
+      <span class="name-auto-tag">Auto</span>
+      <span class="name-auto-val" id="nameAutoVal">sticker_1703123456</span>
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost btn-sm" id="nameCancel">Cancel</button>
+      <button class="btn btn-primary" id="nameContinue">Continue →</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOKEN MODAL -->
+<div class="overlay" id="tokModal" role="dialog" aria-modal="true">
+  <div class="modal">
+    <div class="modal-ico">🔑</div>
+    <h2>GitHub Token (PAT)</h2>
+    <p>Paste your Personal Access Token with <code>repo</code> scope. Stored in this browser only — never sent anywhere else.</p>
+    <input type="password" id="tokInp" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off" spellcheck="false"/>
+    <div class="modal-btns">
+      <button class="btn btn-danger btn-sm" id="tokClear">Clear</button>
+      <button class="btn btn-ghost btn-sm" id="tokCancel">Cancel</button>
+      <button class="btn btn-primary btn-sm" id="tokSave">Save Token</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="overlay" id="delModal" role="dialog" aria-modal="true">
+  <div class="modal modal-del">
+    <div class="modal-ico">🗑️</div>
+    <h2>Delete this file?</h2>
+    <p id="delDesc">This action cannot be undone.</p>
+    <p class="del-file" id="delFile"></p>
+    <div class="modal-btns">
+      <button class="btn btn-ghost btn-sm" id="delCancel">Cancel</button>
+      <button class="btn btn-danger btn-sm" id="delConfirm">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- UPLOAD DRAWER -->
+<div class="drw-bg" id="drwBg">
+  <div class="drw" role="dialog" aria-modal="true" aria-label="Upload">
+    <div class="drw-handle"></div>
+    <p class="drw-title">Upload Sticker or Video</p>
+    <div class="drop-zone" id="dropZone">
+      <input type="file" id="fileInp" accept="image/*,video/*" aria-label="Choose file"/>
+      <span class="drop-ico" id="dropIco">📎</span>
+      <p class="drop-lbl">Drop here or <em>browse</em></p>
+      <div class="chips">
+        <span class="chip c-img">PNG</span><span class="chip c-img">JPG</span>
+        <span class="chip c-img">WEBP</span><span class="chip c-img">GIF</span>
+        <span class="chip c-img">SVG</span><span class="chip c-vid">MP4</span>
+        <span class="chip c-vid">MOV</span><span class="chip c-vid">WEBM</span>
+      </div>
+    </div>
+    <div class="prev-bar" id="prevBar">
+      <div class="prev-thumb" id="prevThumb"></div>
+      <div class="prev-meta">
+        <p class="prev-nm" id="prevNm">—</p>
+        <p class="prev-sz" id="prevSz">—</p>
+      </div>
+      <span class="route-pill" id="routePill"></span>
+      <button class="btn btn-ghost btn-sm btn-ico" id="clearFile" aria-label="Remove">✕</button>
+    </div>
+    <div class="vid-note" id="vidNote">
+      🤖 <strong>GitHub Actions</strong> converts this to a <strong>silent looping MP4</strong> in <code>output/</code> within ~1–2 min.
+    </div>
+    <div class="up-msg" id="upMsg" role="status"></div>
+    <div class="up-acts">
+      <button class="btn btn-primary" id="upBtn" disabled>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+        <span id="upLbl">Upload</span>
+      </button>
+      <button class="btn btn-ghost btn-sm" id="cancelDrw">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="hdr">
+  <a class="logo" href="#" aria-label="Stickers Cloud home">
+    <div class="logo-mark">☁</div>
+    <div>
+      <span class="logo-name">Stickers Cloud</span>
+      <span class="logo-sub" id="logoSub">reda889/Stickers-cloud</span>
+    </div>
+  </a>
+
+  <div class="search-wrap">
+    <svg class="search-ico" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input class="search-inp" id="searchInp" type="text" placeholder="Search…" autocomplete="off" aria-label="Search"/>
+  </div>
+
+  <div class="hdr-right">
+    <div class="theme-sw" role="group" aria-label="Select theme">
+      <button class="th-btn th-dark active" data-theme="dark"   title="Dark"></button>
+      <button class="th-btn th-sakura"      data-theme="sakura" title="Sakura 🌸"></button>
+      <button class="th-btn th-neon"        data-theme="neon"   title="Neon 💚"></button>
+      <button class="th-btn th-blue"        data-theme="blue"   title="Ocean 🌊"></button>
+      <button class="th-btn th-light"       data-theme="light"  title="Light ☀️"></button>
+    </div>
+    <button class="btn btn-ghost btn-ico" id="refreshBtn" title="Refresh" aria-label="Refresh">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+    </button>
+    <button class="btn btn-primary btn-sm" id="openUpBtn">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Upload
+    </button>
+    <button class="btn btn-ghost btn-sm tok-btn" id="openTokBtn">
+      <span class="tok-dot" id="tokDot"></span>
+      <span id="tokLbl">Token</span>
+    </button>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="setup-bar gone" id="setupBar">
+    <div class="setup-txt">
+      <strong>⚡ Install Workflow</strong> — Set up GitHub Actions once to auto-convert videos to silent looping MP4s.
+    </div>
+    <div class="setup-acts">
+      <button class="btn btn-sm btn-amber" id="installBtn">Install</button>
+      <button class="btn btn-ghost btn-sm" id="dismissSetup">✕</button>
+    </div>
+  </div>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab on" data-tab="images" role="tab" aria-selected="true">🖼️ Images <span class="tab-n" id="cnt-img">–</span></button>
+    <button class="tab" data-tab="videos" role="tab" aria-selected="false">🎬 Videos <span class="tab-n" id="cnt-vid">–</span></button>
+    <button class="tab" data-tab="pending" role="tab" aria-selected="false">⏳ Processing <span class="tab-n" id="cnt-pend">–</span></button>
+  </nav>
+
+  <div class="grid" id="grid" role="list" aria-label="Media gallery"></div>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
